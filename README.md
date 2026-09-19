@@ -237,6 +237,35 @@ encodes -- NVIDIA's for NVENC; for VA-API, Mesa's on AMD or Intel's media driver
 loader for Vulkan Video. A Mesa built without the H.264 and HEVC codecs, as some
 distributions ship it, offers VA-API no encoder at all.
 
+### What to install on Arch and Fedora
+
+`packaging/install.sh` puts the files in place on any distribution with systemd. What differs
+between distributions is the names the runtime-loaded pieces carry, and, on Fedora, whether the
+Mesa that arrives offers VA-API an encoder at all.
+
+| Piece | Arch | Fedora |
+|---|---|---|
+| the login tool | `python` | `python3` |
+| the sound server's socket | `pipewire` | `pipewire` |
+| VA-API, AMD and Intel | `libva` + `mesa` | `libva` + `mesa-va-drivers` |
+| Vulkan Video | `vulkan-radeon`, `vulkan-intel`, ... | `mesa-vulkan-drivers` |
+
+**On Fedora, `mesa-va-drivers` is built without the H.264 and HEVC codecs**, so `vainfo` shows
+no `VAEntrypointEncSlice` and the host refuses with the encoder stage named. The RPM Fusion
+package carries them; it replaces the Fedora one rather than sitting beside it:
+
+```sh
+sudo dnf install mesa-va-drivers-freeworld
+```
+
+Arch's `mesa` is built with both codecs, and `radeonsi_drv_video.so` ships inside it, so no
+separate driver package is wanted there. Either way, `vainfo` naming `VAProfileH264High` and
+`VAProfileHEVCMain` beside `VAEntrypointEncSlice` is what says the card will host; which cards
+have been measured is [docs/09-compatibility.md](docs/09-compatibility.md).
+
+`KESSEL_WS_SERVER` is the public service when the env file leaves it empty, so the login alone
+is the whole of the setup; the variable is for a signaling server of one's own.
+
 ## Documentation
 
 | Document | Contents |
